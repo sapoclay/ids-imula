@@ -71,10 +71,10 @@ def mostrar_menu_principal():
 ║  3. 🖥️  Analizar logs del sistema                  ║
 ║  4. 🔎 Buscar en logs                             ║
 ║  5. 🔧 Ver/modificar reglas de detección          ║
-║  6. 📈 Ver estadísticas de la base de datos       ║
-║  7. 📄 Generar informe                            ║
-║  8. 🔍 Consultar alertas anteriores               ║
-║  9. 💾 Seleccionar/Cargar base de datos           ║
+║  6. 💾 Seleccionar/Cargar base de datos           ║
+║  7. 📈 Ver estadísticas de la base de datos       ║
+║  8. 📄 Generar informe                            ║
+║  9. 🔍 Consultar alertas anteriores               ║
 ║ 10. ⚙️  Ver/Editar configuración                   ║
 ║ 11. ❓ Ayuda y documentación                      ║
 ║ 12. 🌐 Abrir repositorio en GitHub                ║
@@ -534,11 +534,11 @@ actividad sospechosa o maliciosa, generando alertas clasificadas por severidad.
 •  2. Analizar archivo específico - Selecciona un archivo .log para analizar
 •  3. Analizar logs del sistema   - Analiza /var/log/auth.log, syslog, etc.
 •  4. Buscar en logs              - Busca texto, IPs o patrones en archivos de log
-•  5. Ver/modificar reglas        - Gestiona las reglas de detección activas
+•  5. Seleccionar base de datos   - Cambia o crea una nueva BD de alertas
 •  6. Ver estadísticas            - Consulta estadísticas de la base de datos
 •  7. Generar informe             - Exporta informes en TXT, JSON o HTML
 •  8. Consultar alertas           - Busca alertas anteriores con filtros
-•  9. Seleccionar base de datos   - Cambia o crea una nueva BD de alertas
+•  9. Ver/modificar reglas        - Gestiona las reglas de detección activas
 • 10. Ver/Editar configuración    - Modifica umbrales, rutas y patrones
 • 11. Ayuda y documentación       - Esta pantalla de ayuda
 • 12. Abrir repositorio GitHub    - Abre el repositorio del proyecto en el navegador
@@ -1032,9 +1032,9 @@ def menu_configuracion():
         print(f"{COLORES['NEGRITA']}Opciones:{COLORES['RESET']}")
         print("  1. Modificar umbrales de detección")
         print("  2. Añadir/quitar ruta de log del sistema")
-        print("  3. Ver patrones de ataque configurados")
-        print("  4. Ver User-Agents sospechosos")
-        print("  5. Ver rutas web sospechosas")
+        print("  3. Ver/Modificar patrones de ataque (SQLi/XSS)")
+        print("  4. Ver/Modificar User-Agents sospechosos")
+        print("  5. Ver/Modificar rutas web sospechosas")
         print(f"  6. {COLORES['ALTA']}🔄 Restaurar valores por defecto{COLORES['RESET']}")
         print("  0. Volver al menú principal")
         
@@ -1047,11 +1047,11 @@ def menu_configuracion():
         elif opcion == '2':
             _editar_rutas_logs(config)
         elif opcion == '3':
-            _ver_patrones_ataque(config)
+            _editar_patrones_ataque(config)
         elif opcion == '4':
-            _ver_user_agents(config)
+            _editar_user_agents(config)
         elif opcion == '5':
-            _ver_rutas_sospechosas(config)
+            _editar_rutas_sospechosas(config)
         elif opcion == '6':
             _restaurar_valores_defecto(config, config_defaults)
 
@@ -1081,6 +1081,32 @@ def _guardar_config(config):
             nuevo_rutas += f"    '{nombre}': '{ruta}',\n"
         nuevo_rutas += "}"
         contenido = re.sub(patron_rutas, nuevo_rutas, contenido, flags=re.DOTALL)
+        
+        # Actualizar USER_AGENTS_SOSPECHOSOS
+        patron_ua = r"USER_AGENTS_SOSPECHOSOS\s*=\s*\[[^\]]+\]"
+        nuevo_ua = "USER_AGENTS_SOSPECHOSOS = [\n"
+        for ua in config.USER_AGENTS_SOSPECHOSOS:
+            nuevo_ua += f"    '{ua}',\n"
+        nuevo_ua += "]"
+        contenido = re.sub(patron_ua, nuevo_ua, contenido, flags=re.DOTALL)
+        
+        # Actualizar RUTAS_SOSPECHOSAS
+        patron_rutas_sosp = r"RUTAS_SOSPECHOSAS\s*=\s*\[[^\]]+\]"
+        nuevo_rutas_sosp = "RUTAS_SOSPECHOSAS = [\n"
+        for ruta in config.RUTAS_SOSPECHOSAS:
+            nuevo_rutas_sosp += f"    '{ruta}',\n"
+        nuevo_rutas_sosp += "]"
+        contenido = re.sub(patron_rutas_sosp, nuevo_rutas_sosp, contenido, flags=re.DOTALL)
+        
+        # Actualizar PATRONES_SQL_INJECTION
+        patron_sql = r"PATRONES_SQL_INJECTION\s*=\s*\[[^\]]+\]"
+        nuevo_sql = "PATRONES_SQL_INJECTION = [\n"
+        for patron in config.PATRONES_SQL_INJECTION:
+            # Escapar comillas simples en los patrones
+            patron_escapado = patron.replace("'", "\\'")
+            nuevo_sql += f"    '{patron_escapado}',\n"
+        nuevo_sql += "]"
+        contenido = re.sub(patron_sql, nuevo_sql, contenido, flags=re.DOTALL)
         
         with open(config_path, 'w', encoding='utf-8') as f:
             f.write(contenido)
@@ -1183,37 +1209,160 @@ def _editar_rutas_logs(config):
     input("\n⏎ Pulsa Intro para continuar...")
 
 
-def _ver_patrones_ataque(config):
-    """Muestra los patrones de SQL Injection configurados"""
-    print(f"\n{COLORES['INFO']}🔍 PATRONES DE ATAQUE (SQL Injection/XSS){COLORES['RESET']}")
-    print("─" * 50)
-    
-    for patron in config.PATRONES_SQL_INJECTION:
-        print(f"  • {patron}")
-    
-    input("\n⏎ Pulsa Intro para continuar...")
+def _editar_patrones_ataque(config):
+    """Permite ver y modificar los patrones de SQL Injection/XSS"""
+    while True:
+        print(f"\n{COLORES['INFO']}🔍 PATRONES DE ATAQUE (SQL Injection/XSS){COLORES['RESET']}")
+        print("─" * 50)
+        
+        for i, patron in enumerate(config.PATRONES_SQL_INJECTION, 1):
+            print(f"  {i:2}. {patron}")
+        
+        print("\n" + "─" * 50)
+        print("  a. Añadir nuevo patrón")
+        print("  e. Eliminar patrón")
+        print("  0. Volver")
+        
+        opcion = input("\n  Selecciona opción: ").strip().lower()
+        
+        if opcion == '0':
+            break
+        elif opcion == 'a':
+            nuevo = input("  Introduce el nuevo patrón: ").strip()
+            if nuevo:
+                if nuevo not in config.PATRONES_SQL_INJECTION:
+                    config.PATRONES_SQL_INJECTION.append(nuevo)
+                    print(f"  ✅ Patrón añadido: {nuevo}")
+                    
+                    guardar = input("  ¿Guardar cambio permanentemente? (s/n): ").strip().lower()
+                    if guardar == 's':
+                        if _guardar_config(config):
+                            print(f"  ✅ Cambio guardado en config.py")
+                        else:
+                            print(f"  ⚠️  Cambio solo para esta sesión")
+                else:
+                    print(f"  ⚠️  El patrón ya existe")
+        elif opcion == 'e':
+            try:
+                idx = int(input("  Número del patrón a eliminar: ").strip()) - 1
+                if 0 <= idx < len(config.PATRONES_SQL_INJECTION):
+                    eliminado = config.PATRONES_SQL_INJECTION.pop(idx)
+                    print(f"  ✅ Patrón eliminado: {eliminado}")
+                    
+                    guardar = input("  ¿Guardar cambio permanentemente? (s/n): ").strip().lower()
+                    if guardar == 's':
+                        if _guardar_config(config):
+                            print(f"  ✅ Cambio guardado en config.py")
+                        else:
+                            print(f"  ⚠️  Cambio solo para esta sesión")
+                else:
+                    print("  ❌ Número inválido")
+            except ValueError:
+                print("  ❌ Debes introducir un número")
 
 
-def _ver_user_agents(config):
-    """Muestra los User-Agents sospechosos"""
-    print(f"\n{COLORES['INFO']}🤖 USER-AGENTS SOSPECHOSOS{COLORES['RESET']}")
-    print("─" * 40)
-    
-    for ua in config.USER_AGENTS_SOSPECHOSOS:
-        print(f"  • {ua}")
-    
-    input("\n⏎ Pulsa Intro para continuar...")
+def _editar_user_agents(config):
+    """Permite ver y modificar los User-Agents sospechosos"""
+    while True:
+        print(f"\n{COLORES['INFO']}🤖 USER-AGENTS SOSPECHOSOS{COLORES['RESET']}")
+        print("─" * 40)
+        
+        for i, ua in enumerate(config.USER_AGENTS_SOSPECHOSOS, 1):
+            print(f"  {i:2}. {ua}")
+        
+        print("\n" + "─" * 40)
+        print("  a. Añadir nuevo User-Agent")
+        print("  e. Eliminar User-Agent")
+        print("  0. Volver")
+        
+        opcion = input("\n  Selecciona opción: ").strip().lower()
+        
+        if opcion == '0':
+            break
+        elif opcion == 'a':
+            nuevo = input("  Introduce el nuevo User-Agent: ").strip()
+            if nuevo:
+                if nuevo.lower() not in [ua.lower() for ua in config.USER_AGENTS_SOSPECHOSOS]:
+                    config.USER_AGENTS_SOSPECHOSOS.append(nuevo)
+                    print(f"  ✅ User-Agent añadido: {nuevo}")
+                    
+                    guardar = input("  ¿Guardar cambio permanentemente? (s/n): ").strip().lower()
+                    if guardar == 's':
+                        if _guardar_config(config):
+                            print(f"  ✅ Cambio guardado en config.py")
+                        else:
+                            print(f"  ⚠️  Cambio solo para esta sesión")
+                else:
+                    print(f"  ⚠️  El User-Agent ya existe")
+        elif opcion == 'e':
+            try:
+                idx = int(input("  Número del User-Agent a eliminar: ").strip()) - 1
+                if 0 <= idx < len(config.USER_AGENTS_SOSPECHOSOS):
+                    eliminado = config.USER_AGENTS_SOSPECHOSOS.pop(idx)
+                    print(f"  ✅ User-Agent eliminado: {eliminado}")
+                    
+                    guardar = input("  ¿Guardar cambio permanentemente? (s/n): ").strip().lower()
+                    if guardar == 's':
+                        if _guardar_config(config):
+                            print(f"  ✅ Cambio guardado en config.py")
+                        else:
+                            print(f"  ⚠️  Cambio solo para esta sesión")
+                else:
+                    print("  ❌ Número inválido")
+            except ValueError:
+                print("  ❌ Debes introducir un número")
 
 
-def _ver_rutas_sospechosas(config):
-    """Muestra las rutas web sospechosas"""
-    print(f"\n{COLORES['INFO']}🚫 RUTAS WEB SOSPECHOSAS{COLORES['RESET']}")
-    print("─" * 40)
-    
-    for ruta in config.RUTAS_SOSPECHOSAS:
-        print(f"  • {ruta}")
-    
-    input("\n⏎ Pulsa Intro para continuar...")
+def _editar_rutas_sospechosas(config):
+    """Permite ver y modificar las rutas web sospechosas"""
+    while True:
+        print(f"\n{COLORES['INFO']}🚫 RUTAS WEB SOSPECHOSAS{COLORES['RESET']}")
+        print("─" * 40)
+        
+        for i, ruta in enumerate(config.RUTAS_SOSPECHOSAS, 1):
+            print(f"  {i:2}. {ruta}")
+        
+        print("\n" + "─" * 40)
+        print("  a. Añadir nueva ruta sospechosa")
+        print("  e. Eliminar ruta sospechosa")
+        print("  0. Volver")
+        
+        opcion = input("\n  Selecciona opción: ").strip().lower()
+        
+        if opcion == '0':
+            break
+        elif opcion == 'a':
+            nueva = input("  Introduce la nueva ruta (ej: /backup, /.htaccess): ").strip()
+            if nueva:
+                if nueva not in config.RUTAS_SOSPECHOSAS:
+                    config.RUTAS_SOSPECHOSAS.append(nueva)
+                    print(f"  ✅ Ruta añadida: {nueva}")
+                    
+                    guardar = input("  ¿Guardar cambio permanentemente? (s/n): ").strip().lower()
+                    if guardar == 's':
+                        if _guardar_config(config):
+                            print(f"  ✅ Cambio guardado en config.py")
+                        else:
+                            print(f"  ⚠️  Cambio solo para esta sesión")
+                else:
+                    print(f"  ⚠️  La ruta ya existe")
+        elif opcion == 'e':
+            try:
+                idx = int(input("  Número de la ruta a eliminar: ").strip()) - 1
+                if 0 <= idx < len(config.RUTAS_SOSPECHOSAS):
+                    eliminada = config.RUTAS_SOSPECHOSAS.pop(idx)
+                    print(f"  ✅ Ruta eliminada: {eliminada}")
+                    
+                    guardar = input("  ¿Guardar cambio permanentemente? (s/n): ").strip().lower()
+                    if guardar == 's':
+                        if _guardar_config(config):
+                            print(f"  ✅ Cambio guardado en config.py")
+                        else:
+                            print(f"  ⚠️  Cambio solo para esta sesión")
+                else:
+                    print("  ❌ Número inválido")
+            except ValueError:
+                print("  ❌ Debes introducir un número")
 
 
 def _restaurar_valores_defecto(config, config_defaults):
@@ -1311,7 +1460,7 @@ def main():
         elif opcion == '4':
             menu_buscar_en_logs()
         elif opcion == '5':
-            menu_reglas(motor)
+            menu_cargar_bd(gestor)
         elif opcion == '6':
             menu_estadisticas(gestor)
         elif opcion == '7':
@@ -1319,7 +1468,7 @@ def main():
         elif opcion == '8':
             menu_consultar_alertas(gestor)
         elif opcion == '9':
-            menu_cargar_bd(gestor)
+            menu_reglas(motor)
         elif opcion == '10':
             menu_configuracion()
         elif opcion == '11':

@@ -88,11 +88,11 @@ Aparecerá un menú con opciones:
 ║  2. 📁 Analizar archivo de log específico         ║
 ║  3. 🖥️  Analizar logs del sistema                 ║
 ║  4. 🔎 Buscar en logs                             ║
-║  5. 🔧 Ver/modificar reglas de detección          ║
+║  5. 💾 Seleccionar/Cargar base de datos           ║
 ║  6. 📈 Ver estadísticas de la base de datos       ║
 ║  7. 📄 Generar informe                            ║
 ║  8. 🔍 Consultar alertas anteriores               ║
-║  9. 💾 Seleccionar/Cargar base de datos           ║
+║  9. 🔧 Ver/modificar reglas de detección          ║
 ║ 10. ⚙️  Ver/Editar configuración                  ║
 ║ 11. ❓ Ayuda y documentación                      ║
 ║ 12. 🌐 Abrir repositorio en GitHub                ║
