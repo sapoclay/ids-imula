@@ -69,15 +69,15 @@ def mostrar_menu_principal():
 ║  1. 📊 Analizar logs de ejemplo (demo)            ║
 ║  2. 📁 Analizar archivo de log específico         ║
 ║  3. 🖥️  Analizar logs del sistema                  ║
-║  4. 🔧 Ver/modificar reglas de detección          ║
-║  5. 📈 Ver estadísticas de la base de datos       ║
-║  6. 📄 Generar informe                            ║
-║  7. 🔍 Consultar alertas anteriores               ║
-║  8. 💾 Seleccionar/Cargar base de datos           ║
-║  9. ⚙️  Ver/Editar configuración                   ║
-║ 10. ❓ Ayuda y documentación                      ║
-║ 11. 🌐 Abrir repositorio en GitHub                ║
-║ 12. 🔎 Buscar en logs                             ║
+║  4. 🔎 Buscar en logs                             ║
+║  5. 🔧 Ver/modificar reglas de detección          ║
+║  6. 📈 Ver estadísticas de la base de datos       ║
+║  7. 📄 Generar informe                            ║
+║  8. 🔍 Consultar alertas anteriores               ║
+║  9. 💾 Seleccionar/Cargar base de datos           ║
+║ 10. ⚙️  Ver/Editar configuración                   ║
+║ 11. ❓ Ayuda y documentación                      ║
+║ 12. 🌐 Abrir repositorio en GitHub                ║
 ║  0. 🚪 Salir                                      ║
 {COLORES['NEGRITA']}╚═══════════════════════════════════════════════════╝{COLORES['RESET']}
 """)
@@ -533,15 +533,15 @@ actividad sospechosa o maliciosa, generando alertas clasificadas por severidad.
 •  1. Analizar logs de ejemplo   - Genera logs simulados y los analiza (demo)
 •  2. Analizar archivo específico - Selecciona un archivo .log para analizar
 •  3. Analizar logs del sistema   - Analiza /var/log/auth.log, syslog, etc.
-•  4. Ver/modificar reglas        - Gestiona las reglas de detección activas
-•  5. Ver estadísticas            - Consulta estadísticas de la base de datos
-•  6. Generar informe             - Exporta informes en TXT, JSON o HTML
-•  7. Consultar alertas           - Busca alertas anteriores con filtros
-•  8. Seleccionar base de datos   - Cambia o crea una nueva BD de alertas
-•  9. Ver/Editar configuración    - Modifica umbrales, rutas y patrones
-• 10. Ayuda y documentación       - Esta pantalla de ayuda
-• 11. Abrir repositorio GitHub    - Abre el repositorio del proyecto en el navegador
-• 12. Buscar en logs              - Busca texto, IPs o patrones en archivos de log
+•  4. Buscar en logs              - Busca texto, IPs o patrones en archivos de log
+•  5. Ver/modificar reglas        - Gestiona las reglas de detección activas
+•  6. Ver estadísticas            - Consulta estadísticas de la base de datos
+•  7. Generar informe             - Exporta informes en TXT, JSON o HTML
+•  8. Consultar alertas           - Busca alertas anteriores con filtros
+•  9. Seleccionar base de datos   - Cambia o crea una nueva BD de alertas
+• 10. Ver/Editar configuración    - Modifica umbrales, rutas y patrones
+• 11. Ayuda y documentación       - Esta pantalla de ayuda
+• 12. Abrir repositorio GitHub    - Abre el repositorio del proyecto en el navegador
 
 {COLORES['INFO']}TIPOS DE ATAQUES DETECTADOS{COLORES['RESET']}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1309,23 +1309,23 @@ def main():
         elif opcion == '3':
             menu_analizar_sistema(gestor)
         elif opcion == '4':
-            menu_reglas(motor)
-        elif opcion == '5':
-            menu_estadisticas(gestor)
-        elif opcion == '6':
-            menu_generar_informe(gestor)
-        elif opcion == '7':
-            menu_consultar_alertas(gestor)
-        elif opcion == '8':
-            menu_cargar_bd(gestor)
-        elif opcion == '9':
-            menu_configuracion()
-        elif opcion == '10':
-            mostrar_ayuda()
-        elif opcion == '11':
-            abrir_repositorio_github()
-        elif opcion == '12':
             menu_buscar_en_logs()
+        elif opcion == '5':
+            menu_reglas(motor)
+        elif opcion == '6':
+            menu_estadisticas(gestor)
+        elif opcion == '7':
+            menu_generar_informe(gestor)
+        elif opcion == '8':
+            menu_consultar_alertas(gestor)
+        elif opcion == '9':
+            menu_cargar_bd(gestor)
+        elif opcion == '10':
+            menu_configuracion()
+        elif opcion == '11':
+            mostrar_ayuda()
+        elif opcion == '12':
+            abrir_repositorio_github()
         elif opcion == '0':
             print(f"\n{COLORES['INFO']}👋 ¡Hasta pronto! Mantén tus sistemas seguros.{COLORES['RESET']}\n")
             break
