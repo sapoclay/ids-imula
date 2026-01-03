@@ -7,12 +7,48 @@
 
 ## ¿Qué es IDS-IMULA?
 
-IDS-SIMULA es un conjunto de herramientas educativas para aprender seguridad informática:
+IDS-IMULA es un conjunto de herramientas educativas para aprender seguridad informática:
 
-1. **ids.py**: Detector de intrusos - analiza logs y detecta ataques
-2. **analizador_logs.py**: Clasificador de eventos con gráficos
-3. **generador_logs.py**: Genera logs de prueba con ataques simulados
-4. **generador_logs_multiformat.py**: Genera logs en CSV/JSON
+### 🚀 Archivos principales
+| Archivo | Descripción |
+|---------|-------------|
+| **run_app.py** | Lanzador principal - configura el entorno virtual automáticamente |
+| **ids.py** | Programa principal con menú interactivo de 12 opciones |
+
+### 🔍 Módulos de análisis y detección
+| Archivo | Descripción |
+|---------|-------------|
+| **motor_deteccion.py** | Motor con reglas de detección de ataques (fuerza bruta, SQL injection, XSS, etc.) |
+| **lector_logs.py** | Parser multiformato de archivos de log (auth.log, access.log, syslog, CSV, JSON) |
+| **analizador_logs.py** | Analizador estadístico con generación de gráficos visuales |
+| **gestor_alertas.py** | Gestiona alertas, las almacena en BD SQLite y genera notificaciones |
+
+### ⚙️ Configuración
+| Archivo | Descripción |
+|---------|-------------|
+| **config.py** | Configuración principal: umbrales, patrones, rutas de logs |
+| **config_defaults.py** | Valores por defecto para restaurar configuración |
+| **modelos.py** | Estructuras de datos: Alerta, Evento, Severidad, EstadísticasIDS |
+
+### 🧪 Generadores de logs de prueba
+| Archivo | Descripción |
+|---------|-------------|
+| **generador_logs.py** | Genera logs de ejemplo con ataques simulados |
+| **generador_logs_multiformat.py** | Genera logs en formatos CSV, JSON y JSONL |
+
+### 📦 Otros archivos
+| Archivo | Descripción |
+|---------|-------------|
+| **mensaje_salida.py** | Mensaje de despedida al cerrar la aplicación |
+| **requirements.txt** | Dependencias del proyecto (matplotlib) |
+
+### 📁 Directorios generados
+| Directorio | Contenido |
+|------------|-----------|
+| **logs_ejemplo/** | Logs de prueba generados (auth.log, access.log, ufw.log) |
+| **alertas/** | Alertas exportadas en formato TXT y JSON |
+| **reportes/** | Informes, gráficos PNG y resultados de búsquedas |
+| **.venv/** | Entorno virtual de Python (se crea automáticamente) |
 
 ---
 
@@ -48,16 +84,16 @@ Aparecerá un menú con opciones:
 ╠═══════════════════════════════════════════════════╣
 ║  1. 📊 Analizar logs de ejemplo (demo)            ║
 ║  2. 📁 Analizar archivo de log específico         ║
-║  3. 🖥️  Analizar logs del sistema                  ║
+║  3. 🖥️  Analizar logs del sistema                 ║
 ║  4. 🔧 Ver/modificar reglas de detección          ║
 ║  5. 📈 Ver estadísticas de la base de datos       ║
 ║  6. 📄 Generar informe                            ║
 ║  7. 🔍 Consultar alertas anteriores               ║
 ║  8. 💾 Seleccionar/Cargar base de datos           ║
-║  9. ⚙️  Ver/Editar configuración                   ║
+║  9. ⚙️  Ver/Editar configuración                  ║
 ║ 10. ❓ Ayuda y documentación                      ║
 ║ 11. 🌐 Abrir repositorio en GitHub                ║
-║ 12. 🔎 Buscar en logs                            ║
+║ 12. 🔎 Buscar en logs                             ║
 ║  0. 🚪 Salir                                      ║
 ╚═══════════════════════════════════════════════════╝
 ```
