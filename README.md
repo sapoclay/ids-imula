@@ -1,5 +1,7 @@
 # 🛡️ IDS-IMULA
 
+<img width="647" height="196" alt="ids-imula" src="https://github.com/user-attachments/assets/f22b92bc-c99b-4d49-b181-0137a5858574" />
+
 **Simulador de Sistema de Detección de Intrusos**  
 *MF0488 - Gestión de incidentes de seguridad informática*
 
