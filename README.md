@@ -87,7 +87,7 @@ Aparecerá un menú con opciones:
 ║  1. 📊 Analizar logs de ejemplo (demo)            ║
 ║  2. 📁 Analizar archivo de log específico         ║
 ║  3. 🖥️  Analizar logs del sistema                 ║
-║  4. � Buscar en logs                             ║
+║  4. 🔎 Buscar en logs                             ║
 ║  5. 🔧 Ver/modificar reglas de detección          ║
 ║  6. 📈 Ver estadísticas de la base de datos       ║
 ║  7. 📄 Generar informe                            ║
