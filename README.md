@@ -3,7 +3,7 @@
 <img width="647" height="196" alt="ids-imula" src="https://github.com/user-attachments/assets/f22b92bc-c99b-4d49-b181-0137a5858574" />
 
 **Simulador de Sistema de Detección de Intrusos**  
-*MF0488 - Gestión de incidentes de seguridad informática*
+*MF0488*
 
 ---
 
@@ -15,7 +15,7 @@ IDS-IMULA es un conjunto de herramientas educativas para aprender seguridad info
 | Archivo | Descripción |
 |---------|-------------|
 | **run_app.py** | Lanzador principal - configura el entorno virtual automáticamente |
-| **ids.py** | Programa principal con menú interactivo de 12 opciones |
+| **ids.py** | Programa principal con menú interactivo de 16 opciones |
 
 ### 🔍 Módulos de análisis y detección
 | Archivo | Descripción |
@@ -24,6 +24,9 @@ IDS-IMULA es un conjunto de herramientas educativas para aprender seguridad info
 | **lector_logs.py** | Parser multiformato de archivos de log (auth.log, access.log, syslog, CSV, JSON) |
 | **analizador_logs.py** | Analizador estadístico con generación de gráficos visuales |
 | **gestor_alertas.py** | Gestiona alertas, las almacena en BD SQLite y genera notificaciones |
+| **monitor_realtime.py** | Monitorización en tiempo real de logs |
+| **enriquecedor_ip.py** | Geolocalización y reputación de IPs |
+| **ml_detector.py** | Detección de anomalías con Machine Learning |
 
 ### ⚙️ Configuración
 | Archivo | Descripción |
@@ -42,7 +45,7 @@ IDS-IMULA es un conjunto de herramientas educativas para aprender seguridad info
 | Archivo | Descripción |
 |---------|-------------|
 | **mensaje_salida.py** | Mensaje de despedida al cerrar la aplicación |
-| **requirements.txt** | Dependencias del proyecto (matplotlib) |
+| **requirements.txt** | Dependencias del proyecto (matplotlib, scikit-learn, numpy) |
 
 ### 📁 Directorios generados
 | Directorio | Contenido |
@@ -90,18 +93,16 @@ Aparecerá un menú con opciones:
 ║  4. 🔎 Buscar en logs                             ║
 ║  5. 🔧 Ver/modificar reglas de detección          ║
 ║  6. 💾 Seleccionar/Cargar base de datos           ║
-║  7. 📤 Exportar logs a base de datos (.db)        ║
+║  7. 📥 Exportar logs a base de datos (.db)        ║
 ║  8. 📈 Ver estadísticas de la base de datos       ║
 ║  9. 📄 Generar informe                            ║
 ║ 10. 🔍 Consultar alertas anteriores               ║
-║ 11. ⚙️  Ver/Editar configuración                   ║
-║ 12. ❓ Ayuda y documentación                      ║
-║ 13. 🌐 Abrir repositorio en GitHub                ║
-╠═══════════════════════════════════════════════════╣
-║  🆕 NUEVAS FUNCIONALIDADES:                       ║
-║ 14. 🔴 Monitorización en tiempo real              ║
-║ 15. 🌍 Enriquecimiento de IPs (geolocalización)   ║
-║ 16. 🧠 Machine Learning (detección anomalías)     ║
+║ 11. ⚙️  Ver/Editar configuración                  ║
+║ 12. 🔴 Monitorización en tiempo real              ║
+║ 13. 🌍 Enriquecimiento de IPs (geolocalización)   ║
+║ 14. 🧠 Machine Learning (detección anomalías)     ║
+║ 15. ❓ Ayuda y documentación                      ║
+║ 16. 🌐 Abrir repositorio en GitHub                ║
 ╠═══════════════════════════════════════════════════╣
 ║  0. 🚪 Salir                                      ║
 ╚═══════════════════════════════════════════════════╝
@@ -154,7 +155,7 @@ Los gráficos incluyen:
 #### Ver estadísticas del análisis
 ```bash
 python3 run_app.py
-# Seleccionar opción 6
+# Seleccionar opción 8
 ```
 Muestra:
 ```
@@ -177,7 +178,7 @@ Top IPs atacantes:
 #### Abrir repositorio en GitHub
 ```bash
 python3 run_app.py
-# Seleccionar opción 12
+# Seleccionar opción 16
 ```
 Abre automáticamente el repositorio del proyecto en el navegador web predeterminado del sistema:
 ```
@@ -355,6 +356,95 @@ Crea:
 
 ---
 
+## 🔴 Monitorización en Tiempo Real (Opción 12)
+
+Monitoriza logs continuamente mostrando alertas en vivo:
+- Visualización en tiempo real de eventos
+- Estadísticas actualizadas periódicamente
+- Alertas sonoras para eventos críticos
+
+```bash
+python3 run_app.py
+# Seleccionar opción 12
+```
+
+Ejemplo de salida:
+```
+============================================================
+       IDS-IMULA - MONITOR EN TIEMPO REAL
+============================================================
+
+  Logs monitorizados:
+    - syslog: /var/log/syslog
+    - auth: /var/log/auth.log
+
+  Presiona Ctrl+C para detener la monitorización
+============================================================
+
+[2026-01-05 15:30:45] [ALTA] FUERZA_BRUTA
+  IP: 192.168.1.100 | Múltiples intentos fallidos de autenticación
+  💡 Bloquear la IP origen
+
+--- Estado: 00:01:30 | Líneas: 150 | Alertas: 3 ---
+```
+
+---
+
+## 🌍 Enriquecimiento de IPs (Opción 13)
+
+Obtén información completa de cualquier IP:
+- **Geolocalización**: País, ciudad, coordenadas, zona horaria
+- **Reputación**: Consulta en AbuseIPDB y blacklists DNS
+- **Whois**: ISP, organización, ASN
+- **DNS inverso**: Hostname asociado
+
+```bash
+python3 run_app.py
+# Seleccionar opción 13
+```
+
+Ejemplo de salida:
+```
+════════════════════════════════════════════════════════════
+  📍 IP: 8.8.8.8
+════════════════════════════════════════════════════════════
+  🔗 DNS Inverso: dns.google
+
+  🌍 GEOLOCALIZACIÓN:
+     País: 🇺🇸 United States (US)
+     Ubicación: Mountain View, California
+     ISP: Google LLC
+     ASN: AS15169 GOOGLE
+
+  🛡️  REPUTACIÓN:
+     Nivel de riesgo: LIMPIO
+     Puntuación abuso: 0/100
+════════════════════════════════════════════════════════════
+```
+
+---
+
+## 🧠 Machine Learning (Opción 14)
+
+Detección de anomalías sin reglas predefinidas:
+- **Isolation Forest**: Detecta outliers automáticamente
+- **Baseline learning**: Aprende qué es "tráfico normal"
+- **Zero-day detection**: Encuentra ataques nuevos no conocidos
+
+```bash
+python3 run_app.py
+# Seleccionar opción 14
+```
+
+**Requisitos adicionales para ML:**
+```bash
+pip install scikit-learn numpy
+```
+
+> **Nota:** Las dependencias se instalan automáticamente desde `requirements.txt` al ejecutar `run_app.py`.
+
+---
+
 ## 📁 Estructura del proyecto
 
 ```
@@ -371,6 +461,9 @@ IDS-SIMULA/
 ├── gestor_alertas.py       # Guarda alertas en ficheros y BD
 ├── generador_logs.py       # Genera logs de prueba
 ├── generador_logs_multiformat.py  # Genera CSV/JSON
+├── monitor_realtime.py     # Monitorización en tiempo real
+├── enriquecedor_ip.py      # Geolocalización de IPs
+├── ml_detector.py          # Detección con Machine Learning
 ├── mensaje_salida.py       # Mensaje de despedida
 │
 ├── logs_ejemplo/           # Logs de prueba generados
@@ -392,7 +485,7 @@ IDS-SIMULA/
 
 ---
 
-## 🔍 Ataques que detecta IDS-SIMULA
+## 🔍 Ataques que detecta IDS-IMULA
 
 | Ataque | Ejemplo en log | Severidad |
 |--------|----------------|-----------|
@@ -434,154 +527,26 @@ UMBRAL_ESCANEO_PUERTOS = 10
 
 ---
 
-## 🐍 Uso desde código Python
-
-### Ejemplo: Usar IDS-SIMULA desde tu propio script
-
-```python
-from lector_logs import LectorLogs
-from motor_deteccion import MotorDeteccion
-from gestor_alertas import GestorAlertas
-
-# Crear los componentes
-lector = LectorLogs('/var/log/auth.log')
-motor = MotorDeteccion()
-gestor = GestorAlertas()
-
-# Leer y analizar cada evento
-for evento in lector.leer_logs():
-    alertas = motor.analizar_evento(evento)
-    for alerta in alertas:
-        print(f"🚨 {alerta.severidad}: {alerta.descripcion}")
-        gestor.procesar_alerta(alerta)
-
-# Mostrar resumen
-print(motor.obtener_resumen_alertas())
-```
-
-### Ejemplo: Usar el analizador desde código
-
-```python
-from analizador_logs import AnalizadorLogs, GeneradorGraficos
-
-# Crear analizador
-analizador = AnalizadorLogs()
-
-# Cargar logs
-analizador.cargar_logs(['/var/log/auth.log', '/var/log/syslog'])
-
-# Generar reporte
-reporte = analizador.generar_reporte()
-analizador.imprimir_reporte(reporte)
-
-# Generar gráficos
-graficos = GeneradorGraficos('mis_reportes')
-graficos.generar_todos(reporte, analizador.eventos)
-```
-
----
-
 ## 🔗 Enlaces útiles
 
 | Recurso | Enlace |
 |---------|--------|
 | **Repositorio GitHub** | https://github.com/sapoclay/ids-simula |
-| **Ayuda integrada** | Opción 12 del menú principal |
-| **Abrir en navegador** | Opción 13 del menú principal |
+| **Ayuda integrada** | Opción 15 del menú principal |
+| **Abrir en navegador** | Opción 16 del menú principal |
 
 ---
 
 ## 🤝 Contribución
 
-Este es un proyecto educativo para echar un rato. ~~Sugerencias de mejora~~:
+Este es un proyecto educativo para echar un rato. 
 
-1. ~~Añadir más reglas de detección~~ ✅
-2. ~~Implementar monitorización en tiempo real~~ ✅ (opción 14)
-3. ~~Crear dashboard web con Flask~~ 
-4. ~~Añadir notificaciones por email~~
-5. ~~Integración con SIEM~~
-6. ~~Machine Learning para detección de anomalías~~ ✅ (opción 16)
-7. ~~Geolocalización y enriquecimiento de IPs~~ ✅ (opción 15)
+Ideas futuras:
+- Dashboard web con Flask
+- Notificaciones por email
+- Integración con SIEM
 
 ---
-
-## 🆕 Nuevas Funcionalidades
-
-### 🔴 Monitorización en Tiempo Real (Opción 14)
-
-Monitoriza logs continuamente con dashboard en vivo:
-- Visualización en tiempo real de eventos
-- Estadísticas actualizadas al segundo
-- Alertas sonoras para eventos críticos
-- Controles interactivos (pausar, limpiar, salir)
-
-```bash
-python3 run_app.py
-# Seleccionar opción 14
-```
-
-### 🌍 Enriquecimiento de IPs (Opción 15)
-
-Obtén información completa de cualquier IP:
-- **Geolocalización**: País, ciudad, coordenadas, zona horaria
-- **Reputación**: Consulta en AbuseIPDB y blacklists DNS
-- **Whois**: ISP, organización, ASN
-- **DNS inverso**: Hostname asociado
-
-```python
-from enriquecedor_ip import EnriquecedorIP
-
-enriquecedor = EnriquecedorIP()
-info = enriquecedor.enriquecer_ip("8.8.8.8")
-print(info.resumen())
-```
-
-Ejemplo de salida:
-```
-════════════════════════════════════════════════════════════
-  📍 IP: 8.8.8.8
-════════════════════════════════════════════════════════════
-  🔗 DNS Inverso: dns.google
-
-  🌍 GEOLOCALIZACIÓN:
-     País: 🇺🇸 United States (US)
-     Ubicación: Mountain View, California
-     ISP: Google LLC
-     ASN: AS15169 GOOGLE
-
-  🛡️  REPUTACIÓN:
-     Nivel de riesgo: LIMPIO
-     Puntuación abuso: 0/100
-════════════════════════════════════════════════════════════
-```
-
-### 🧠 Machine Learning (Opción 16)
-
-Detección de anomalías sin reglas predefinidas:
-- **Isolation Forest**: Detecta outliers automáticamente
-- **Baseline learning**: Aprende qué es "tráfico normal"
-- **Zero-day detection**: Encuentra ataques nuevos no conocidos
-
-```python
-from ml_detector import DetectorAnomalias
-
-detector = DetectorAnomalias()
-
-# Entrenar con logs normales
-with open("logs_normales.log") as f:
-    lineas = f.readlines()
-detector.entrenar(lineas)
-
-# Detectar anomalías en nuevos logs
-resultado = detector.detectar("nueva linea sospechosa...")
-if resultado.es_anomalia:
-    print(f"⚠️ Anomalía detectada! Score: {resultado.score}")
-```
-
-**Requisitos adicionales para ML:**
-```bash
-pip install scikit-learn numpy
-```
 
 ## 📜 Licencia
 
