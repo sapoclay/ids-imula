@@ -23,7 +23,7 @@ import argparse
 from datetime import datetime
 
 # Importar módulos de IDS-IMULA
-from config import RUTA_LOGS_EJEMPLO, RUTAS_LOGS_SISTEMA, COLORES
+from config import RUTA_LOGS_EJEMPLO, RUTAS_LOGS_SISTEMA, COLORES, BASE_DIR
 from modelos import EstadisticasIDS, Severidad
 from lector_logs import LectorLogs, LectorMultiple
 from motor_deteccion import MotorDeteccion
@@ -38,6 +38,29 @@ except ImportError:
     GRAFICOS_DISPONIBLES = False
     AnalizadorLogs = None  # type: ignore
     GeneradorGraficos = None  # type: ignore
+
+# Importar nuevos módulos (opcional)
+try:
+    from monitor_realtime import menu_monitor_realtime
+except ImportError:
+    def menu_monitor_realtime():
+        print(f"\n{COLORES['ALTA']}❌ Módulo de monitorización no disponible{COLORES['RESET']}")
+        input("\n⏎ Pulsa Enter para continuar...")
+
+try:
+    from enriquecedor_ip import menu_enriquecimiento_ip
+except ImportError:
+    def menu_enriquecimiento_ip():
+        print(f"\n{COLORES['ALTA']}❌ Módulo de enriquecimiento de IPs no disponible{COLORES['RESET']}")
+        input("\n⏎ Pulsa Enter para continuar...")
+
+try:
+    from ml_detector import menu_machine_learning
+except ImportError:
+    def menu_machine_learning():
+        print(f"\n{COLORES['ALTA']}❌ Módulo de Machine Learning no disponible{COLORES['RESET']}")
+        print("   Instala las dependencias: pip install scikit-learn numpy")
+        input("\n⏎ Pulsa Enter para continuar...")
 
 
 def mostrar_banner():
@@ -72,12 +95,17 @@ def mostrar_menu_principal():
 ║  4. 🔎 Buscar en logs                             ║
 ║  5. 🔧 Ver/modificar reglas de detección          ║
 ║  6. 💾 Seleccionar/Cargar base de datos           ║
-║  7. 📈 Ver estadísticas de la base de datos       ║
-║  8. 📄 Generar informe                            ║
-║  9. 🔍 Consultar alertas anteriores               ║
-║ 10. ⚙️  Ver/Editar configuración                   ║
-║ 11. ❓ Ayuda y documentación                      ║
-║ 12. 🌐 Abrir repositorio en GitHub                ║
+║  7. 📥 Exportar logs a base de datos (.db)        ║
+║  8. 📈 Ver estadísticas de la base de datos       ║
+║  9. 📄 Generar informe                            ║
+║ 10. 🔍 Consultar alertas anteriores               ║
+║ 11. ⚙️  Ver/Editar configuración                   ║
+║ 12. 🔴 Monitorización en tiempo real              ║
+║ 13. 🌍 Enriquecimiento de IPs (geolocalización)   ║
+║ 14. 🧠 Machine Learning (detección anomalías)     ║
+║ 15. ❓ Ayuda y documentación                      ║
+║ 16. 🌐 Abrir repositorio en GitHub                ║
+╠═══════════════════════════════════════════════════╣
 ║  0. 🚪 Salir                                      ║
 {COLORES['NEGRITA']}╚═══════════════════════════════════════════════════╝{COLORES['RESET']}
 """)
@@ -433,6 +461,200 @@ def _editar_regla(motor: MotorDeteccion, indice: int, reglas: list):
                 print("  ❌ Valor inválido")
 
 
+def menu_exportar_logs_bd():
+    """Permite exportar todos los eventos de un log a una base de datos SQLite"""
+    import sqlite3
+    
+    print(f"\n{COLORES['INFO']}💾 EXPORTAR LOGS A BASE DE DATOS{COLORES['RESET']}")
+    print("═" * 60)
+    print("""
+Esta función permite guardar TODOS los registros de un archivo de log
+en una base de datos SQLite (.db), no solo las alertas.
+
+Esto es útil para:
+• Consultar logs de forma estructurada con SQL
+• Análisis forense posterior
+• Búsquedas avanzadas por cualquier campo
+• Preservar logs en formato portable
+""")
+    
+    print("─" * 60)
+    print(f"  1. Exportar archivo de log específico")
+    print(f"  2. Exportar logs de ejemplo")
+    print(f"  3. Exportar logs del sistema")
+    print(f"  0. Volver")
+    
+    opcion = input("\n👉 Selecciona opción: ").strip()
+    
+    if opcion == '0':
+        return
+    
+    rutas = []
+    
+    if opcion == '1':
+        ruta = input("\n📁 Ruta al archivo de log: ").strip()
+        ruta = os.path.expanduser(ruta)
+        if os.path.exists(ruta):
+            rutas = [ruta]
+        else:
+            print(f"❌ Archivo no encontrado: {ruta}")
+            input("\n⏎ Pulsa Intro para continuar...")
+            return
+    
+    elif opcion == '2':
+        rutas = [os.path.join(RUTA_LOGS_EJEMPLO, f) 
+                 for f in os.listdir(RUTA_LOGS_EJEMPLO) 
+                 if f.endswith('.log')]
+        if not rutas:
+            print("❌ No hay logs de ejemplo. Usa opción 1 para generar primero.")
+            input("\n⏎ Pulsa Intro para continuar...")
+            return
+    
+    elif opcion == '3':
+        print("\n📋 Logs del sistema disponibles:")
+        import config
+        for i, (nombre, ruta) in enumerate(config.RUTAS_LOGS_SISTEMA.items(), 1):
+            existe = "✅" if os.path.exists(ruta) else "❌"
+            print(f"  {i}. {existe} {nombre}: {ruta}")
+        
+        seleccion = input("\nNúmeros a exportar (ej: 1,3,5 o 'todos'): ").strip()
+        
+        if seleccion.lower() == 'todos':
+            rutas = [r for r in config.RUTAS_LOGS_SISTEMA.values() if os.path.exists(r)]
+        else:
+            try:
+                indices = [int(x.strip()) - 1 for x in seleccion.split(',')]
+                nombres = list(config.RUTAS_LOGS_SISTEMA.keys())
+                for idx in indices:
+                    if 0 <= idx < len(nombres):
+                        ruta = config.RUTAS_LOGS_SISTEMA[nombres[idx]]
+                        if os.path.exists(ruta):
+                            rutas.append(ruta)
+            except ValueError:
+                print("❌ Selección inválida")
+                input("\n⏎ Pulsa Intro para continuar...")
+                return
+    else:
+        print("❌ Opción no válida")
+        input("\n⏎ Pulsa Intro para continuar...")
+        return
+    
+    if not rutas:
+        print("❌ No hay archivos para exportar")
+        input("\n⏎ Pulsa Intro para continuar...")
+        return
+    
+    # Preguntar nombre de la BD de destino
+    print(f"\n📂 Se exportarán {len(rutas)} archivo(s)")
+    nombre_bd = input("📁 Nombre para la base de datos (sin extensión): ").strip()
+    if not nombre_bd:
+        nombre_bd = f"logs_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    
+    ruta_bd = os.path.join(BASE_DIR, f"{nombre_bd}.db")
+    
+    # Crear/conectar a la BD
+    try:
+        conn = sqlite3.connect(ruta_bd)
+        cursor = conn.cursor()
+        
+        # Crear tabla para eventos
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS eventos_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT,
+                origen TEXT,
+                ip_origen TEXT,
+                ip_destino TEXT,
+                puerto INTEGER,
+                usuario TEXT,
+                tipo_evento TEXT,
+                mensaje TEXT,
+                metodo_http TEXT,
+                url TEXT,
+                codigo_respuesta INTEGER,
+                user_agent TEXT,
+                linea_original TEXT,
+                exportado_en TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        
+        # Crear índices
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_eventos_timestamp ON eventos_log(timestamp)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_eventos_ip ON eventos_log(ip_origen)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_eventos_tipo ON eventos_log(tipo_evento)')
+        
+        conn.commit()
+        
+        # Procesar cada archivo
+        total_eventos = 0
+        lector = LectorLogs("")
+        
+        print(f"\n{COLORES['INFO']}⏳ Exportando...{COLORES['RESET']}")
+        
+        for ruta in rutas:
+            print(f"  📂 Procesando: {os.path.basename(ruta)}")
+            lector.ruta_archivo = ruta
+            eventos_archivo = 0
+            
+            for evento in lector.leer_logs():
+                # Extraer datos adicionales si existen
+                datos = evento.datos_extra or {}
+                
+                cursor.execute('''
+                    INSERT INTO eventos_log 
+                    (timestamp, origen, ip_origen, ip_destino, puerto, usuario,
+                     tipo_evento, mensaje, metodo_http, url, codigo_respuesta,
+                     user_agent, linea_original)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    evento.timestamp.isoformat() if evento.timestamp else None,
+                    evento.origen,
+                    evento.ip_origen,
+                    evento.ip_destino,
+                    evento.puerto,
+                    evento.usuario,
+                    evento.tipo_evento.value if evento.tipo_evento else None,
+                    evento.mensaje,
+                    datos.get('metodo'),
+                    datos.get('url'),
+                    datos.get('codigo_respuesta'),
+                    datos.get('user_agent'),
+                    evento.linea_original[:500] if evento.linea_original else None  # Limitar tamaño
+                ))
+                
+                eventos_archivo += 1
+                total_eventos += 1
+                
+                # Commit cada 1000 registros para eficiencia
+                if total_eventos % 1000 == 0:
+                    conn.commit()
+                    print(f"    ... {total_eventos} eventos exportados")
+            
+            print(f"    ✅ {eventos_archivo} eventos")
+        
+        conn.commit()
+        conn.close()
+        
+        # Mostrar resumen
+        tamaño = os.path.getsize(ruta_bd) / 1024  # KB
+        print(f"\n{COLORES['MEDIA']}{'═' * 60}{COLORES['RESET']}")
+        print(f"{COLORES['INFO']}✅ EXPORTACIÓN COMPLETADA{COLORES['RESET']}")
+        print(f"{'─' * 60}")
+        print(f"  📊 Total eventos exportados: {total_eventos}")
+        print(f"  📁 Base de datos: {ruta_bd}")
+        print(f"  💾 Tamaño: {tamaño:.1f} KB")
+        print(f"\n{COLORES['NEGRITA']}Consultas SQL de ejemplo:{COLORES['RESET']}")
+        print(f"  sqlite3 {nombre_bd}.db")
+        print(f"  > SELECT * FROM eventos_log WHERE ip_origen = '192.168.1.100';")
+        print(f"  > SELECT tipo_evento, COUNT(*) FROM eventos_log GROUP BY tipo_evento;")
+        print(f"  > SELECT * FROM eventos_log WHERE url LIKE '%admin%';")
+        
+    except Exception as e:
+        print(f"❌ Error exportando: {e}")
+    
+    input("\n⏎ Pulsa Intro para continuar...")
+
+
 def menu_estadisticas(gestor: GestorAlertas):
     """Muestra estadísticas de la base de datos"""
     print(f"\n{COLORES['INFO']}📈 ESTADÍSTICAS DE LA BASE DE DATOS{COLORES['RESET']}")
@@ -534,14 +756,15 @@ actividad sospechosa o maliciosa, generando alertas clasificadas por severidad.
 •  2. Analizar archivo específico - Selecciona un archivo .log para analizar
 •  3. Analizar logs del sistema   - Analiza /var/log/auth.log, syslog, etc.
 •  4. Buscar en logs              - Busca texto, IPs o patrones en archivos de log
-•  5. Seleccionar base de datos   - Cambia o crea una nueva BD de alertas
-•  6. Ver estadísticas            - Consulta estadísticas de la base de datos
-•  7. Generar informe             - Exporta informes en TXT, JSON o HTML
-•  8. Consultar alertas           - Busca alertas anteriores con filtros
-•  9. Ver/modificar reglas        - Gestiona las reglas de detección activas
-• 10. Ver/Editar configuración    - Modifica umbrales, rutas y patrones
-• 11. Ayuda y documentación       - Esta pantalla de ayuda
-• 12. Abrir repositorio GitHub    - Abre el repositorio del proyecto en el navegador
+•  5. Ver/modificar reglas        - Gestiona las reglas de detección activas
+•  6. Seleccionar base de datos   - Cambia o crea una nueva BD de alertas
+•  7. Exportar logs a BD          - Guarda TODOS los eventos de logs en SQLite
+•  8. Ver estadísticas            - Consulta estadísticas de la base de datos
+•  9. Generar informe             - Exporta informes en TXT, JSON o HTML
+• 10. Consultar alertas           - Busca alertas anteriores con filtros
+• 11. Ver/Editar configuración    - Modifica umbrales, rutas y patrones
+• 12. Ayuda y documentación       - Esta pantalla de ayuda
+• 13. Abrir repositorio GitHub    - Abre el repositorio del proyecto en el navegador
 
 {COLORES['INFO']}TIPOS DE ATAQUES DETECTADOS{COLORES['RESET']}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1460,20 +1683,28 @@ def main():
         elif opcion == '4':
             menu_buscar_en_logs()
         elif opcion == '5':
-            menu_cargar_bd(gestor)
-        elif opcion == '6':
-            menu_estadisticas(gestor)
-        elif opcion == '7':
-            menu_generar_informe(gestor)
-        elif opcion == '8':
-            menu_consultar_alertas(gestor)
-        elif opcion == '9':
             menu_reglas(motor)
+        elif opcion == '6':
+            menu_cargar_bd(gestor)
+        elif opcion == '7':
+            menu_exportar_logs_bd()
+        elif opcion == '8':
+            menu_estadisticas(gestor)
+        elif opcion == '9':
+            menu_generar_informe(gestor)
         elif opcion == '10':
-            menu_configuracion()
+            menu_consultar_alertas(gestor)
         elif opcion == '11':
-            mostrar_ayuda()
+            menu_configuracion()
         elif opcion == '12':
+            menu_monitor_realtime()
+        elif opcion == '13':
+            menu_enriquecimiento_ip()
+        elif opcion == '14':
+            menu_machine_learning()
+        elif opcion == '15':
+            mostrar_ayuda()
+        elif opcion == '16':
             abrir_repositorio_github()
         elif opcion == '0':
             print(f"\n{COLORES['INFO']}👋 ¡Hasta pronto! Mantén tus sistemas seguros.{COLORES['RESET']}\n")

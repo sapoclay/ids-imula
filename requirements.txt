@@ -1,2 +1,6 @@
 # Visualización de gráficos
 matplotlib>=3.5.0
+
+# Machine Learning para detección de anomalías
+scikit-learn>=1.0.0
+numpy>=1.21.0

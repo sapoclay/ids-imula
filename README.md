@@ -88,14 +88,21 @@ Aparecerá un menú con opciones:
 ║  2. 📁 Analizar archivo de log específico         ║
 ║  3. 🖥️  Analizar logs del sistema                 ║
 ║  4. 🔎 Buscar en logs                             ║
-║  5. 💾 Seleccionar/Cargar base de datos           ║
-║  6. 📈 Ver estadísticas de la base de datos       ║
-║  7. 📄 Generar informe                            ║
-║  8. 🔍 Consultar alertas anteriores               ║
-║  9. 🔧 Ver/modificar reglas de detección          ║
-║ 10. ⚙️  Ver/Editar configuración                  ║
-║ 11. ❓ Ayuda y documentación                      ║
-║ 12. 🌐 Abrir repositorio en GitHub                ║
+║  5. 🔧 Ver/modificar reglas de detección          ║
+║  6. 💾 Seleccionar/Cargar base de datos           ║
+║  7. 📤 Exportar logs a base de datos (.db)        ║
+║  8. 📈 Ver estadísticas de la base de datos       ║
+║  9. 📄 Generar informe                            ║
+║ 10. 🔍 Consultar alertas anteriores               ║
+║ 11. ⚙️  Ver/Editar configuración                   ║
+║ 12. ❓ Ayuda y documentación                      ║
+║ 13. 🌐 Abrir repositorio en GitHub                ║
+╠═══════════════════════════════════════════════════╣
+║  🆕 NUEVAS FUNCIONALIDADES:                       ║
+║ 14. 🔴 Monitorización en tiempo real              ║
+║ 15. 🌍 Enriquecimiento de IPs (geolocalización)   ║
+║ 16. 🧠 Machine Learning (detección anomalías)     ║
+╠═══════════════════════════════════════════════════╣
 ║  0. 🚪 Salir                                      ║
 ╚═══════════════════════════════════════════════════╝
 ```
@@ -479,20 +486,102 @@ graficos.generar_todos(reporte, analizador.eventos)
 | Recurso | Enlace |
 |---------|--------|
 | **Repositorio GitHub** | https://github.com/sapoclay/ids-simula |
-| **Ayuda integrada** | Opción 10 del menú principal |
-| **Abrir en navegador** | Opción 11 del menú principal |
+| **Ayuda integrada** | Opción 12 del menú principal |
+| **Abrir en navegador** | Opción 13 del menú principal |
 
 ---
 
 ## 🤝 Contribución
 
-Este es un proyecto educativo para echar un rato. Sugerencias de mejora:
+Este es un proyecto educativo para echar un rato. ~~Sugerencias de mejora~~:
 
-1. Añadir más reglas de detección
-2. Implementar monitorización en tiempo real
-3. Crear dashboard web con Flask
-4. Añadir notificaciones por email
-5. Integración con SIEM
+1. ~~Añadir más reglas de detección~~ ✅
+2. ~~Implementar monitorización en tiempo real~~ ✅ (opción 14)
+3. ~~Crear dashboard web con Flask~~ 
+4. ~~Añadir notificaciones por email~~
+5. ~~Integración con SIEM~~
+6. ~~Machine Learning para detección de anomalías~~ ✅ (opción 16)
+7. ~~Geolocalización y enriquecimiento de IPs~~ ✅ (opción 15)
+
+---
+
+## 🆕 Nuevas Funcionalidades
+
+### 🔴 Monitorización en Tiempo Real (Opción 14)
+
+Monitoriza logs continuamente con dashboard en vivo:
+- Visualización en tiempo real de eventos
+- Estadísticas actualizadas al segundo
+- Alertas sonoras para eventos críticos
+- Controles interactivos (pausar, limpiar, salir)
+
+```bash
+python3 run_app.py
+# Seleccionar opción 14
+```
+
+### 🌍 Enriquecimiento de IPs (Opción 15)
+
+Obtén información completa de cualquier IP:
+- **Geolocalización**: País, ciudad, coordenadas, zona horaria
+- **Reputación**: Consulta en AbuseIPDB y blacklists DNS
+- **Whois**: ISP, organización, ASN
+- **DNS inverso**: Hostname asociado
+
+```python
+from enriquecedor_ip import EnriquecedorIP
+
+enriquecedor = EnriquecedorIP()
+info = enriquecedor.enriquecer_ip("8.8.8.8")
+print(info.resumen())
+```
+
+Ejemplo de salida:
+```
+════════════════════════════════════════════════════════════
+  📍 IP: 8.8.8.8
+════════════════════════════════════════════════════════════
+  🔗 DNS Inverso: dns.google
+
+  🌍 GEOLOCALIZACIÓN:
+     País: 🇺🇸 United States (US)
+     Ubicación: Mountain View, California
+     ISP: Google LLC
+     ASN: AS15169 GOOGLE
+
+  🛡️  REPUTACIÓN:
+     Nivel de riesgo: LIMPIO
+     Puntuación abuso: 0/100
+════════════════════════════════════════════════════════════
+```
+
+### 🧠 Machine Learning (Opción 16)
+
+Detección de anomalías sin reglas predefinidas:
+- **Isolation Forest**: Detecta outliers automáticamente
+- **Baseline learning**: Aprende qué es "tráfico normal"
+- **Zero-day detection**: Encuentra ataques nuevos no conocidos
+
+```python
+from ml_detector import DetectorAnomalias
+
+detector = DetectorAnomalias()
+
+# Entrenar con logs normales
+with open("logs_normales.log") as f:
+    lineas = f.readlines()
+detector.entrenar(lineas)
+
+# Detectar anomalías en nuevos logs
+resultado = detector.detectar("nueva linea sospechosa...")
+if resultado.es_anomalia:
+    print(f"⚠️ Anomalía detectada! Score: {resultado.score}")
+```
+
+**Requisitos adicionales para ML:**
+```bash
+pip install scikit-learn numpy
+```
 
 ## 📜 Licencia
 
